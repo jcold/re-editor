@@ -363,7 +363,7 @@ class _CodeFindControllerImpl extends ValueNotifier<CodeFindValue?> implements C
       );
       return;
     }
-    _tasker.run(_CodeFindPayload(_controller.codeLines, _controller.unforldLineSelection, option), (result) {
+    _tasker.run(_CodeFindPayload(_controller.codeLines, _controller.unfoldLineSelection, option), (result) {
       if (option == value?.option) {
         final CodeFindValue newValue = value!.copyWith(
           result: result,
@@ -440,14 +440,14 @@ class _CodeFindControllerImpl extends ValueNotifier<CodeFindValue?> implements C
     }
     int index = selections.length - 1;
     for (; index > 0; index--) {
-      if (selections[index].contains(payload.unforldLineSelection)) {
+      if (selections[index].contains(payload.unfoldLineSelection)) {
         break;
       }
-      if (selections[index].endIndex < payload.unforldLineSelection.startIndex) {
+      if (selections[index].endIndex < payload.unfoldLineSelection.startIndex) {
         break;
       }
-      if (selections[index].endIndex == payload.unforldLineSelection.startIndex &&
-        selections[index].endOffset <= payload.unforldLineSelection.startOffset) {
+      if (selections[index].endIndex == payload.unfoldLineSelection.startIndex &&
+        selections[index].endOffset <= payload.unfoldLineSelection.startOffset) {
         break;
       }
     }
@@ -482,9 +482,9 @@ class _CodeFindControllerImpl extends ValueNotifier<CodeFindValue?> implements C
 class _CodeFindPayload {
 
   final CodeLines codeLines;
-  final CodeLineSelection unforldLineSelection;
+  final CodeLineSelection unfoldLineSelection;
   final CodeFindOption option;
 
-  const _CodeFindPayload(this.codeLines, this.unforldLineSelection, this.option);
+  const _CodeFindPayload(this.codeLines, this.unfoldLineSelection, this.option);
 
 }

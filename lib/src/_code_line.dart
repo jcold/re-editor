@@ -143,7 +143,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
   int get lineCount => codeLines.lineCount;
 
   @override
-  CodeLineSelection get unforldLineSelection {
+  CodeLineSelection get unfoldLineSelection {
     final int baseRawIndex;
     final int extentRawIndex;
     if (selection.isSameLine) {
@@ -2452,7 +2452,7 @@ class _CodeLineEditingControllerDelegate implements CodeLineEditingController {
   CodeLineEditingValue? get preValue => _delegate.preValue;
 
   @override
-  CodeLineSelection get unforldLineSelection => _delegate.unforldLineSelection;
+  CodeLineSelection get unfoldLineSelection => _delegate.unfoldLineSelection;
 
   @override
   void redo() {
