@@ -24,6 +24,7 @@ class _CodeEditable extends StatefulWidget {
   final Color? chunkIndicatorColor;
   final double cursorWidth;
   final bool showCursorWhenReadOnly;
+  final bool keepSelectionWhenUnfocused;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
   final Widget? sperator;
@@ -65,6 +66,7 @@ class _CodeEditable extends StatefulWidget {
     this.chunkIndicatorColor,
     required this.cursorWidth,
     required this.showCursorWhenReadOnly,
+    required this.keepSelectionWhenUnfocused,
     required this.padding,
     required this.margin,
     required this.sperator,
@@ -323,11 +325,13 @@ class _CodeEditableState extends State<_CodeEditable> with AutomaticKeepAliveCli
     _updateAutoCompleteState(false);
     updateKeepAlive();
     if (!widget.focusNode.hasFocus) {
-      if (kIsAndroid || kIsIOS) {
+      if ((kIsAndroid || kIsIOS) && !widget.keepSelectionWhenUnfocused) {
         widget.controller.cancelSelection();
       }
-      widget.selectionOverlayController.hideHandle();
-      widget.selectionOverlayController.hideToolbar();
+      if (!widget.keepSelectionWhenUnfocused) {
+        widget.selectionOverlayController.hideHandle();
+        widget.selectionOverlayController.hideToolbar();
+      }
     }
   }
 

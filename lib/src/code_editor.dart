@@ -204,6 +204,7 @@ class CodeEditor extends StatefulWidget {
     this.clipBehavior = Clip.none,
     this.readOnly,
     this.showCursorWhenReadOnly,
+    this.keepSelectionWhenUnfocused,
     this.wordWrap,
     this.autocompleteSymbols,
     this.autofocus,
@@ -295,6 +296,13 @@ class CodeEditor extends StatefulWidget {
   ///
   /// The cursor refers to the blinking caret when the editor is focused.
   final bool? showCursorWhenReadOnly;
+
+  /// Whether to keep the current selection when the editor loses focus.
+  ///
+  /// On mobile platforms, by default the editor clears the current selection
+  /// when the editor loses focus. Set this to true to keep the selection even
+  /// after focus is lost.
+  final bool? keepSelectionWhenUnfocused;
 
   /// Should wrap the word.
   final bool? wordWrap;
@@ -520,6 +528,7 @@ class _CodeEditorState extends State<CodeEditor> {
       chunkIndicatorColor: widget.style?.chunkIndicatorColor,
       cursorWidth: widget.style?.cursorWidth ?? _kDefaultCaretWidth,
       showCursorWhenReadOnly: widget.showCursorWhenReadOnly ?? true,
+      keepSelectionWhenUnfocused: widget.keepSelectionWhenUnfocused ?? false,
       sperator: widget.sperator,
       border: widget.border,
       borderRadius: widget.borderRadius,
