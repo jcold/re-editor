@@ -447,6 +447,7 @@ class _CodeEditableState extends State<_CodeEditable> with AutomaticKeepAliveCli
 class _CodeCursorBlinkController extends ValueNotifier<bool> {
 
   Timer? _timer;
+  bool _disposed = false;
 
   _CodeCursorBlinkController() : super(false);
 
@@ -458,7 +459,9 @@ class _CodeCursorBlinkController extends ValueNotifier<bool> {
     if (kIsAndroid || kIsIOS) {
       // Wait selection position to update
       Future.delayed(const Duration(milliseconds: 100), () {
-        value = true;
+        if (!_disposed) {
+          value = true;
+        }
       });
     } else {
       value = true;
@@ -475,11 +478,14 @@ class _CodeCursorBlinkController extends ValueNotifier<bool> {
   }
 
   void _cursorTick(Timer timer) {
-    value = !value;
+    if (!_disposed) {
+      value = !value;
+    }
   }
 
   @override
   void dispose() {
+    _disposed = true;
     stopBlink();
     super.dispose();
   }
