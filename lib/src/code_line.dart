@@ -8,6 +8,9 @@ typedef CodeLineSpanBuilder = TextSpan Function({
   required TextStyle style,
 });
 
+/// 公开类型别名，用于需要具体实现类型的场景（如类型判断、向下转型等）。
+typedef CodeLineEditingControllerImpl = _CodeLineEditingControllerImpl;
+
 /// A controller for an editor field.
 ///
 /// Whenever the user modifies a editor field with an associated
