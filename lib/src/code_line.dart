@@ -355,11 +355,17 @@ abstract class CodeLineEditingController extends ValueNotifier<CodeLineEditingVa
   /// Scroll the editor to make sure the cursor is visible.
   void makeCursorVisible();
 
+  /// Scroll the editor to make the cursor appear at the top of the viewport.
+  void makeCursorTop();
+
   /// Scroll the editor to make sure the given position is visible at center.
   void makePositionCenterIfInvisible(CodeLinePosition position);
 
   /// Scroll the editor to make sure the given position is visible.
   void makePositionVisible(CodeLinePosition position);
+
+  /// Scroll the editor to make the given position appear at the top of the viewport.
+  void makePositionTop(CodeLinePosition position);
 
   /// Force the render to repaint.
   void forceRepaint();

@@ -23,6 +23,10 @@ class CodeScrollController {
     _render?.makePositionVisible(position);
   }
 
+  void makeTop(CodeLinePosition position) {
+    _render?.makePositionTop(position);
+  }
+
   void bindEditor(GlobalKey key) {
     _editorKey = key;
   }

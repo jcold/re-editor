@@ -1095,6 +1095,11 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
   }
 
   @override
+  void makeCursorTop() {
+    _render?.makePositionTop(selection.extent);
+  }
+
+  @override
   void makePositionCenterIfInvisible(CodeLinePosition position) {
     _render?.makePositionCenterIfInvisible(position);
   }
@@ -1102,6 +1107,11 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
   @override
   void makePositionVisible(CodeLinePosition position) {
     _render?.makePositionVisible(position);
+  }
+
+  @override
+  void makePositionTop(CodeLinePosition position) {
+    _render?.makePositionTop(position);
   }
 
   @override
@@ -2358,6 +2368,16 @@ class _CodeLineEditingControllerDelegate implements CodeLineEditingController {
   @override
   void makePositionVisible(CodeLinePosition position) {
     _delegate.makePositionVisible(position);
+  }
+
+  @override
+  void makeCursorTop() {
+    _delegate.makeCursorTop();
+  }
+
+  @override
+  void makePositionTop(CodeLinePosition position) {
+    _delegate.makePositionTop(position);
   }
 
   @override

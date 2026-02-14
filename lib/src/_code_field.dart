@@ -719,6 +719,57 @@ class _CodeFieldRender extends RenderBox implements MouseTrackerAnnotation {
     }
   }
 
+  /// 将指定位置滚动到视口第一行（顶部）
+  void makePositionTop(CodeLinePosition position, {int tryCount = 0, bool animated = false}) {
+    void scrollViewport(ViewportOffset viewport, num target) {
+      if (animated) {
+        viewport.animateTo(target.toDouble(), duration: positionCenteringDuration, curve: Curves.decelerate);
+      } else {
+        viewport.jumpTo(target.toDouble());
+      }
+    }
+
+    final Offset? offset = calculateTextPositionViewportOffset(position);
+    if (offset == null) {
+      if (_displayParagraphs.isNotEmpty) {
+        final CodeLineRenderParagraph first = _displayParagraphs.first;
+        if (position.index < first.index) {
+          final double target = max(0, first.top - _preferredLineHeight * (first.index - position.index) - paddingTop);
+          scrollViewport(_verticalViewport, target);
+        }
+        final CodeLineRenderParagraph last = _displayParagraphs.last;
+        if (position.index > last.index) {
+          final double target = min(
+            _verticalViewportSize!,
+            last.bottom + _preferredLineHeight * (position.index - last.index) - paddingTop,
+          );
+          scrollViewport(_verticalViewport, target);
+        }
+      }
+      if (tryCount < 10) {
+        SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+          makePositionTop(position, tryCount: tryCount + 1, animated: animated);
+        });
+      }
+      return;
+    }
+    final double target = max(0, min(_verticalViewportSize!, _verticalViewport.pixels + offset.dy - paddingTop));
+    scrollViewport(_verticalViewport, target);
+
+    if (_horizontalViewport != null) {
+      if (offset.dx < 0) {
+        final double dxTarget = max(0, _horizontalViewport!.pixels + offset.dx);
+        scrollViewport(_horizontalViewport!, dxTarget);
+      } else if (offset.dx > size.width - _preferredLineHeight) {
+        final double dxTarget = min(
+          _horizontalViewportSize!,
+          _horizontalViewport!.pixels + offset.dx - (size.width - _preferredLineHeight),
+        );
+        scrollViewport(_horizontalViewport!, dxTarget);
+      }
+    }
+  }
+
   void forceRepaint() {
     _highlighter.clearCache();
     _displayParagraphs.clear();
