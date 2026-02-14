@@ -624,7 +624,8 @@ class _CodeFieldRender extends RenderBox implements MouseTrackerAnnotation {
         }
         final CodeLineRenderParagraph last = _displayParagraphs.last;
         if (position.index > last.index) {
-          _verticalViewport.jumpTo(max(0, last.bottom - size.height + _preferredLineHeight * (position.index - first.index)));
+          // 修正：position 在 last 下方，应使用 (position.index - last.index)，而非 first.index
+          _verticalViewport.jumpTo(max(0, last.bottom - size.height + _preferredLineHeight * (position.index - last.index)));
         }
       }
       if (tryCount < 10) {
@@ -633,6 +634,18 @@ class _CodeFieldRender extends RenderBox implements MouseTrackerAnnotation {
         });
       }
       return;
+    }
+    // 防止「目标在下半屏却滚动到顶部」：当 offset.dy < 0 但目标行在可见范围内时，
+    // 可能是 _displayParagraphs 与 pixels 不同步导致计算错误，延后到下一帧重试
+    if (_displayParagraphs.isNotEmpty) {
+      final CodeLineRenderParagraph first = _displayParagraphs.first;
+      final CodeLineRenderParagraph last = _displayParagraphs.last;
+      if (offset.dy < 0 && position.index >= first.index && position.index <= last.index && tryCount < 10) {
+        SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+          makePositionVisible(position, tryCount + 1);
+        });
+        return;
+      }
     }
     if (offset.dy < 0) {
       _verticalViewport.jumpTo(_verticalViewport.pixels + offset.dy);
