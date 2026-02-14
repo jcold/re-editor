@@ -389,6 +389,7 @@ class _CodeEditorState extends State<CodeEditor> {
     _findController.addListener(_updateWidget);
     _scrollController = widget.scrollController ?? CodeScrollController();
     _scrollController.bindEditor(_editorKey);
+    _scrollController.registerFloatingCursorUpdater(_inputController.updateFloatingCursor);
     _chunkController = CodeChunkController(_editingController, widget.chunkAnalyzer ?? const DefaultCodeChunkAnalyzer());
 
     _selectionOverlayController = kIsAndroid || kIsIOS ? _MobileSelectionOverlayController(
@@ -442,6 +443,7 @@ class _CodeEditorState extends State<CodeEditor> {
     if (widget.findController == null) {
       _findController.dispose();
     }
+    _scrollController.unregisterFloatingCursorUpdater();
     if (widget.scrollController== null) {
       _scrollController.dispose();
     }
