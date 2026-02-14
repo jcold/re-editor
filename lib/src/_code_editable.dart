@@ -25,6 +25,7 @@ class _CodeEditable extends StatefulWidget {
   final double cursorWidth;
   final bool showCursorWhenReadOnly;
   final bool keepSelectionWhenUnfocused;
+  final bool floatingCursorUseVisualBoundsForEdgeScroll;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
   final Widget? sperator;
@@ -67,6 +68,7 @@ class _CodeEditable extends StatefulWidget {
     required this.cursorWidth,
     required this.showCursorWhenReadOnly,
     required this.keepSelectionWhenUnfocused,
+    required this.floatingCursorUseVisualBoundsForEdgeScroll,
     required this.padding,
     required this.margin,
     required this.sperator,
@@ -309,6 +311,7 @@ class _CodeEditableState extends State<_CodeEditable> with AutomaticKeepAliveCli
       chunkIndicatorColor: widget.chunkIndicatorColor,
       cursorWidth: widget.cursorWidth,
       padding: widget.padding,
+      floatingCursorUseVisualBoundsForEdgeScroll: widget.floatingCursorUseVisualBoundsForEdgeScroll,
       readOnly: widget.readOnly,
       // Enable long text rendering when the find is on.
       maxLengthSingleLineRendering: widget.findController.value != null ? null : widget.maxLengthSingleLineRendering,

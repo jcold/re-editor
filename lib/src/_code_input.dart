@@ -208,9 +208,13 @@ class _CodeInputController extends ChangeNotifier implements DeltaTextInputClien
       case FloatingCursorDragState.Update:
         final Offset updatedOffset = _floatingCursorStartingOffset + point.offset!;
 
-        final double topBound = render.paintBounds.top + render.paddingTop;
+        final double topBound = render._floatingCursorUseVisualBoundsForEdgeScroll
+            ? render.paintBounds.top
+            : render.paintBounds.top + render.paddingTop;
         final double leftBound = render.paintBounds.left + render.paddingLeft;
-        final double bottomBound = render.paintBounds.bottom - render.paddingBottom - render.floatingCursorHeight;
+        final double bottomBound = render._floatingCursorUseVisualBoundsForEdgeScroll
+            ? render.paintBounds.bottom - render.floatingCursorHeight
+            : render.paintBounds.bottom - render.paddingBottom - render.floatingCursorHeight;
         final double rightBound = render.paintBounds.right - render.paddingRight;
 
         // Clamp the offset coordinates to the paint bounds

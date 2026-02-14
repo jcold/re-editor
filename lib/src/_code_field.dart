@@ -24,6 +24,7 @@ class _CodeField extends SingleChildRenderObjectWidget {
   final double cursorWidth;
   final double floatingCursorWidth;
   final EdgeInsetsGeometry padding;
+  final bool floatingCursorUseVisualBoundsForEdgeScroll;
   final bool readOnly;
   final int? maxLengthSingleLineRendering;
   final LayerLink startHandleLayerLink;
@@ -53,6 +54,7 @@ class _CodeField extends SingleChildRenderObjectWidget {
     required this.cursorWidth,
     floatingCursorWidth,
     required this.padding,
+    required this.floatingCursorUseVisualBoundsForEdgeScroll,
     required this.readOnly,
     this.maxLengthSingleLineRendering,
     required this.startHandleLayerLink,
@@ -86,6 +88,7 @@ class _CodeField extends SingleChildRenderObjectWidget {
     cursorWidth: cursorWidth,
     floatingCursorWidth: floatingCursorWidth,
     padding: padding,
+    floatingCursorUseVisualBoundsForEdgeScroll: floatingCursorUseVisualBoundsForEdgeScroll,
     readOnly: readOnly,
     maxLengthSingleLineRendering: maxLengthSingleLineRendering,
     startHandleLayerLink: startHandleLayerLink,
@@ -117,6 +120,7 @@ class _CodeField extends SingleChildRenderObjectWidget {
       ..cursorWidth = cursorWidth
       ..floatingCursorWidth = floatingCursorWidth
       ..padding = padding
+      ..floatingCursorUseVisualBoundsForEdgeScroll = floatingCursorUseVisualBoundsForEdgeScroll
       ..readOnly = readOnly
       ..maxLengthSingleLineRendering = maxLengthSingleLineRendering
       ..startHandleLayerLink = startHandleLayerLink
@@ -142,6 +146,7 @@ class _CodeFieldRender extends RenderBox implements MouseTrackerAnnotation {
   ValueNotifier<_FloatingCursorState> _floatingCursorNotifier;
   ValueChanged<List<CodeLineRenderParagraph>> _onRenderParagraphsChanged;
   EdgeInsetsGeometry _padding;
+  bool _floatingCursorUseVisualBoundsForEdgeScroll;
   bool _readOnly;
   int? _maxLengthSingleLineRendering;
   Color? _chunkIndicatorColor;
@@ -180,6 +185,7 @@ class _CodeFieldRender extends RenderBox implements MouseTrackerAnnotation {
     required double cursorWidth,
     required double floatingCursorWidth,
     required EdgeInsetsGeometry padding,
+    required bool floatingCursorUseVisualBoundsForEdgeScroll,
     required bool readOnly,
     int? maxLengthSingleLineRendering,
     required LayerLink startHandleLayerLink,
@@ -197,6 +203,7 @@ class _CodeFieldRender extends RenderBox implements MouseTrackerAnnotation {
     _floatingCursorNotifier = floatingCursorNotifier,
     _onRenderParagraphsChanged = onRenderParagraphsChanged,
     _padding = padding,
+    _floatingCursorUseVisualBoundsForEdgeScroll = floatingCursorUseVisualBoundsForEdgeScroll,
     _readOnly = readOnly,
     _maxLengthSingleLineRendering = maxLengthSingleLineRendering,
     _chunkIndicatorColor = chunkIndicatorColor,
@@ -512,6 +519,13 @@ class _CodeFieldRender extends RenderBox implements MouseTrackerAnnotation {
     markNeedsLayout();
   }
 
+  set floatingCursorUseVisualBoundsForEdgeScroll(bool value) {
+    if (_floatingCursorUseVisualBoundsForEdgeScroll == value) {
+      return;
+    }
+    _floatingCursorUseVisualBoundsForEdgeScroll = value;
+  }
+
   set readOnly(bool value) {
     if (_readOnly == value) {
       return;
@@ -802,12 +816,18 @@ class _CodeFieldRender extends RenderBox implements MouseTrackerAnnotation {
 
   void autoScrollWhenDraggingFloatingCursor(Offset offset) {
     final double unit = _preferredLineHeight;
+    final double topBound = _floatingCursorUseVisualBoundsForEdgeScroll
+        ? paintBounds.top
+        : paintBounds.top + paddingTop;
+    final double bottomBound = _floatingCursorUseVisualBoundsForEdgeScroll
+        ? paintBounds.bottom - floatingCursorHeight
+        : paintBounds.bottom - paddingBottom - floatingCursorHeight;
     if (_verticalViewportSize != null) {
-      if (offset.dy == paintBounds.top + paddingTop) {
+      if (offset.dy == topBound) {
         _alignTopEdge(
           offset: _verticalViewport.pixels - unit
         );
-      } else if (offset.dy == paintBounds.bottom - paddingBottom - floatingCursorHeight) {
+      } else if (offset.dy == bottomBound) {
         _alignBottomEdge(
           offset: _verticalViewport.pixels + unit
         );

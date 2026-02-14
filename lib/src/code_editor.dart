@@ -205,6 +205,7 @@ class CodeEditor extends StatefulWidget {
     this.readOnly,
     this.showCursorWhenReadOnly,
     this.keepSelectionWhenUnfocused,
+    this.floatingCursorUseVisualBoundsForEdgeScroll,
     this.wordWrap,
     this.autocompleteSymbols,
     this.autofocus,
@@ -303,6 +304,14 @@ class CodeEditor extends StatefulWidget {
   /// when the editor loses focus. Set this to true to keep the selection even
   /// after focus is lost.
   final bool? keepSelectionWhenUnfocused;
+
+  /// Whether to use visual bounds (instead of content bounds) for floating cursor
+  /// edge detection and auto-scroll when dragging.
+  ///
+  /// When false (default), the top/bottom bounds exclude padding, so the area
+  /// that triggers edge scroll is smaller. When true, bounds are the visible
+  /// viewport edges, making it easier to trigger scroll at the padded region.
+  final bool? floatingCursorUseVisualBoundsForEdgeScroll;
 
   /// Should wrap the word.
   final bool? wordWrap;
@@ -531,6 +540,7 @@ class _CodeEditorState extends State<CodeEditor> {
       cursorWidth: widget.style?.cursorWidth ?? _kDefaultCaretWidth,
       showCursorWhenReadOnly: widget.showCursorWhenReadOnly ?? true,
       keepSelectionWhenUnfocused: widget.keepSelectionWhenUnfocused ?? false,
+      floatingCursorUseVisualBoundsForEdgeScroll: widget.floatingCursorUseVisualBoundsForEdgeScroll ?? false,
       sperator: widget.sperator,
       border: widget.border,
       borderRadius: widget.borderRadius,
