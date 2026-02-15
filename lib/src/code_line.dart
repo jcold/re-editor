@@ -1002,6 +1002,41 @@ class CodeLineRange extends TextRange {
 
 }
 
+/// 换行时回调返回的结果，re-editor 仅做透传与插入，不解析业务含义
+class NewLineResult {
+  /// 新行应插入的前缀
+  final String prefix;
+  /// 若非 null，用此替换当前行 before 部分（如双 Enter 退出列表）
+  final String? replaceBefore;
+
+  const NewLineResult(this.prefix, [this.replaceBefore]);
+}
+
+/// 换行时传给 [CodeLineOptions.onNewLine] 的上下文
+class NewLineContext {
+  final String previousLine;
+  final String baseIndent;
+  final int indentSize;
+  final bool selectionInClosure;
+  final int newLineIndex;
+
+  const NewLineContext({
+    required this.previousLine,
+    required this.baseIndent,
+    required this.indentSize,
+    required this.selectionInClosure,
+    required this.newLineIndex,
+  });
+}
+
+/// [CodeLineOptions.beforeDeleteBackward] 的返回值，表示应删除的范围
+class DeleteBackwardRange {
+  final int start;
+  final int end;
+
+  const DeleteBackwardRange(this.start, this.end);
+}
+
 /// Some options of the code lines.
 class CodeLineOptions {
 
@@ -1009,7 +1044,10 @@ class CodeLineOptions {
 
   const CodeLineOptions({
     this.lineBreak = TextLineBreak.lf,
-    this.indentSize = _defaultIndentSize
+    this.indentSize = _defaultIndentSize,
+    this.onNewLine,
+    this.beforeDeleteBackward,
+    this.onContentEdited,
   });
 
   /// Line break symbols, like LF, CRLF.
@@ -1020,18 +1058,33 @@ class CodeLineOptions {
   /// Indent length, default value is 2.
   final int indentSize;
 
+  /// 换行时的回调，返回 [NewLineResult] 则使用其结果，返回 null 使用默认逻辑
+  final NewLineResult? Function(NewLineContext context)? onNewLine;
+
+  /// Backspace 前的回调，返回 [DeleteBackwardRange] 则删除该范围，返回 null 使用默认逻辑
+  final DeleteBackwardRange? Function(int lineIndex, int offset)? beforeDeleteBackward;
+
+  /// 内容被编辑时回调（供外部清除自定义状态，如补全前缀记录）
+  final void Function()? onContentEdited;
+
   CodeLineOptions copyWith({
     TextLineBreak? lineBreak,
     int? indentSize,
+    NewLineResult? Function(NewLineContext context)? onNewLine,
+    DeleteBackwardRange? Function(int lineIndex, int offset)? beforeDeleteBackward,
+    void Function()? onContentEdited,
   }) {
     return CodeLineOptions(
       lineBreak: lineBreak ?? this.lineBreak,
       indentSize: indentSize ?? this.indentSize,
+      onNewLine: onNewLine ?? this.onNewLine,
+      beforeDeleteBackward: beforeDeleteBackward ?? this.beforeDeleteBackward,
+      onContentEdited: onContentEdited ?? this.onContentEdited,
     );
   }
 
   @override
-  int get hashCode => Object.hash(lineBreak, indentSize);
+  int get hashCode => Object.hash(lineBreak, indentSize, onNewLine, beforeDeleteBackward, onContentEdited);
 
   @override
   bool operator ==(Object other) {
@@ -1040,7 +1093,10 @@ class CodeLineOptions {
     }
     return other is CodeLineOptions
         && other.lineBreak == lineBreak
-        && other.indentSize == indentSize;
+        && other.indentSize == indentSize
+        && other.onNewLine == onNewLine
+        && other.beforeDeleteBackward == beforeDeleteBackward
+        && other.onContentEdited == onContentEdited;
   }
 
   String get indent => ' ' * indentSize;

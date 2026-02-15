@@ -200,6 +200,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
 
   @override
   void edit(TextEditingValue newValue) {
+    options.onContentEdited?.call();
     if (newValue.text.isMultiline) {
       final String replacement;
       final String beforeText = _codeTextBefore(selection.start);
@@ -1252,6 +1253,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
   }
 
   void _deleteSelection() {
+    options.onContentEdited?.call();
     if (selection.isCollapsed) {
       return;
     }
@@ -1278,6 +1280,25 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
     if (selection.isCollapsed) {
       if (selection.baseIndex == 0 && selection.baseOffset == 0) {
         // At the start position of page, nothing to delete
+        return;
+      }
+      final range = options.beforeDeleteBackward?.call(
+        selection.baseIndex,
+        selection.baseOffset - 1,
+      );
+      if (range != null) {
+        final String lineText = baseLine.text;
+        final String newText = lineText.substring(0, range.start) + lineText.substring(range.end);
+        final CodeLines newCodeLines = CodeLines.from(codeLines);
+        newCodeLines[selection.baseIndex] = baseLine.copyWith(text: newText);
+        value = value.copyWith(
+          codeLines: newCodeLines,
+          selection: CodeLineSelection.collapsed(
+            index: selection.baseIndex,
+            offset: range.start,
+          ),
+        );
+        makeCursorCenterIfInvisible();
         return;
       }
       if (selection.baseOffset == 0) {
@@ -1519,25 +1540,51 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
     final CodeLines newCodeLines = codeLines.sublines(0, selection.startIndex);
     final CodeLine before = _codeLineBefore(selection.start);
     final CodeLine after = _codeLineAfter(selection.end);
-    newCodeLines.add(before);
-    final String alignIndent = before.substring(0, before.text.indentLength);
+    final String baseIndent = before.substring(0, before.text.indentLength);
+    final String alignIndent = baseIndent;
+
+    final onNewLine = options.onNewLine;
+    if (onNewLine != null) {
+      final ctx = NewLineContext(
+        previousLine: before.text,
+        baseIndent: baseIndent,
+        indentSize: options.indentSize,
+        selectionInClosure: _selectionInClosure,
+        newLineIndex: selection.startIndex + 1,
+      );
+      final result = onNewLine(ctx);
+      if (result != null) {
+        final beforeToAdd = result.replaceBefore != null
+            ? CodeLine(result.replaceBefore!)
+            : before;
+        final closureExtra = _selectionInClosure ? indent : '';
+        _applyNewLineInner(
+            newCodeLines, beforeToAdd, after, result.prefix, closureExtra);
+        return;
+      }
+    }
+    final closureExtra = _selectionInClosure ? indent : '';
+    _applyNewLineInner(newCodeLines, before, after, alignIndent, closureExtra);
+  }
+
+  /// [linePrefix] 新行（及 after 行）的基础前缀
+  /// [closureExtraIndent] 在 closure 内时额外加在 closure 行上的缩进
+  void _applyNewLineInner(
+    CodeLines newCodeLines,
+    CodeLine beforeToAdd,
+    CodeLine after,
+    String linePrefix,
+    String closureExtraIndent,
+  ) {
+    newCodeLines.add(beforeToAdd);
     final int offset;
-    // If the enter tap in a closure, we should add a new code line inside the closure
-    // with an addtional indent.
-    // e.g.
-    // {|} => {
-    //           |
-    //        }
     if (_selectionInClosure) {
-      newCodeLines.add(CodeLine(alignIndent + indent));
+      newCodeLines.add(CodeLine(linePrefix + closureExtraIndent));
       offset = newCodeLines.last.length;
     } else {
-      offset = alignIndent.length;
+      offset = linePrefix.length;
     }
-    // Align the next line's intent with pre code line
-    newCodeLines.add(after.copyWith(
-      text: alignIndent + after.text
-    ));
+    newCodeLines.add(after.copyWith(text: linePrefix + after.text));
     if (selection.endIndex + 1 < codeLines.length) {
       newCodeLines.addFrom(codeLines, selection.endIndex + 1);
     }
@@ -1545,7 +1592,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
       codeLines: newCodeLines,
       selection: CodeLineSelection.collapsed(
         index: selection.startIndex + 1,
-        offset: offset
+        offset: offset,
       ),
     );
     makeCursorCenterIfInvisible();
@@ -1756,6 +1803,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
   }
 
   void _replaceRange(String replacement, [CodeLineSelection? range]) {
+    options.onContentEdited?.call();
     range ??= selection;
     if (replacement.isEmpty && range.isCollapsed) {
       return;
