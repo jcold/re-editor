@@ -273,7 +273,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
       composing: newComposing
     );
     _cache.markNewRecord(false);
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   @override
@@ -294,7 +294,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
       extentIndex: extent,
       extentOffset: base > extent ? 0 : codeLines[end].length,
     );
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   @override
@@ -313,7 +313,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
       selection = CodeLineSelection.fromPosition(
         position: selection.extent
       );
-      makeCursorCenterIfInvisible();
+      makeCursorVisible();
     }
   }
 
@@ -1159,7 +1159,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
         extentIndex: selection.extentIndex - 1,
       )
     );
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   void _moveSelectionLinesDown() {
@@ -1179,7 +1179,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
         extentIndex: selection.extentIndex + 1,
       )
     );
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   void _deleteLineForward() {
@@ -1249,7 +1249,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
         offset: offset
       ),
     );
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   void _deleteSelection() {
@@ -1273,7 +1273,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
         affinity: selection.start.affinity
       )
     );
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   void _deleteBackward() {
@@ -1298,7 +1298,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
             offset: range.start,
           ),
         );
-        makeCursorCenterIfInvisible();
+        makeCursorVisible();
         return;
       }
       if (selection.baseOffset == 0) {
@@ -1377,7 +1377,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
     } else {
       _deleteSelection();
     }
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   void _deleteForward() {
@@ -1439,7 +1439,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
     } else {
       _deleteSelection();
     }
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   void _deleteWordBackward() {
@@ -1595,7 +1595,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
         offset: offset,
       ),
     );
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   void _applyIndent() {
@@ -1653,7 +1653,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
         )
       );
     }
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   void _applyOutdent() {
@@ -1708,7 +1708,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
         extentOffset: extentOffset,
       )
     );
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   void _transposeCharacters() {
@@ -1845,7 +1845,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
         affinity: range.extentAffinity
       )
     );
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   void _replaceAll(Pattern pattern, String replacement) {
@@ -1889,7 +1889,7 @@ class _CodeLineEditingControllerImpl extends ValueNotifier<CodeLineEditingValue>
         offset: newExtentOffset
       )
     );
-    makeCursorCenterIfInvisible();
+    makeCursorVisible();
   }
 
   List<CodeLine> _applyIndents(List<CodeLine> children) {
@@ -2400,7 +2400,7 @@ class _CodeLineEditingControllerDelegate implements CodeLineEditingController {
 
   @override
   void makeCursorCenterIfInvisible() {
-    _delegate.makeCursorCenterIfInvisible();
+    _delegate.makeCursorVisible();
   }
 
   @override

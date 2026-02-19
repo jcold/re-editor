@@ -1,5 +1,8 @@
 part of re_editor;
 
+/// 行号区仅响应点击（tap）选中行，超过此位移视为滑动，不触发选中
+const double _kLineNumberTapSlop = 18.0;
+
 class CodeLineNumberRenderObject extends RenderBox {
 
   CodeLineEditingController _controller;
@@ -11,6 +14,10 @@ class CodeLineNumberRenderObject extends RenderBox {
 
   final String Function(int lineIndex)? _customLineIndex2Text;
   final TextPainter _textPainter;
+
+  /// 按下时记录的行号与全局坐标，用于区分点击与滑动
+  int? _pendingTapLineIndex;
+  Offset? _pointerDownGlobal;
 
   CodeLineNumberRenderObject({
     required CodeLineEditingController controller,
@@ -88,11 +95,28 @@ class CodeLineNumberRenderObject extends RenderBox {
   @override
   void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
     if (event is PointerDownEvent) {
-      final Offset position = globalToLocal(event.position);
-      final CodeLineRenderParagraph? paragraph = _findParagraphByPosition(position);
+      final Offset localPosition = globalToLocal(event.position);
+      final CodeLineRenderParagraph? paragraph = _findParagraphByPosition(localPosition);
       if (paragraph != null) {
-        _controller.selectLine(paragraph.index);
+        _pendingTapLineIndex = paragraph.index;
+        _pointerDownGlobal = event.position;
       }
+    } else if (event is PointerMoveEvent) {
+      if (_pointerDownGlobal != null &&
+          (event.position - _pointerDownGlobal!).distance > _kLineNumberTapSlop) {
+        _pendingTapLineIndex = null;
+        _pointerDownGlobal = null;
+      }
+    } else if (event is PointerUpEvent || event is PointerCancelEvent) {
+      if (_pendingTapLineIndex != null && event is PointerUpEvent) {
+        final Offset localPosition = globalToLocal(event.position);
+        final CodeLineRenderParagraph? paragraph = _findParagraphByPosition(localPosition);
+        if (paragraph != null && paragraph.index == _pendingTapLineIndex) {
+          _controller.selectLine(_pendingTapLineIndex!);
+        }
+      }
+      _pendingTapLineIndex = null;
+      _pointerDownGlobal = null;
     }
     super.handleEvent(event, entry);
   }

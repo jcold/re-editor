@@ -296,13 +296,13 @@ class _CodeInputController extends ChangeNotifier implements DeltaTextInputClien
         // If the final selection is in not the viewport, make it visible without animating the floating cursor.
         // Otherwise, play the floating cursor reset animation.
         if (finalOffset != null && (finalOffset.dx < 0 || finalOffset.dy < 0)) {
-          render.makePositionCenterIfInvisible(
+          render.makePositionVisible(
             CodeLinePosition(
               index: selection.baseIndex,
               offset: selection.baseOffset,
               affinity: selection.baseAffinity),
-            animated: true);
-            _floatingCursorController.disableFloatingCursor();
+          );
+          _floatingCursorController.disableFloatingCursor();
         }
         else {
           _floatingCursorController.animateDisableFloatingCursor();
