@@ -308,7 +308,9 @@ class _CodeInputController extends ChangeNotifier implements DeltaTextInputClien
           _floatingCursorController.animateDisableFloatingCursor();
         }
 
-
+        // 结束浮动光标后允许下一次按键输入生效，避免“第一次按键不显示、第二次一起显示”的问题
+        _updateCausedByFloatingCursor = false;
+        break;
     }
   }
 
