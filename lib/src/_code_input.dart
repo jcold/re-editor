@@ -199,7 +199,8 @@ class _CodeInputController extends ChangeNotifier implements DeltaTextInputClien
     }
     switch(point.state) {
       case FloatingCursorDragState.Start:
-        _floatingCursorStartingOffset = render.calculateTextPositionViewportOffset(selection.base)!;
+        // 从 extent（光标端）开始拖动，与用户对“光标位置”的预期一致；base 为选区锚点
+        _floatingCursorStartingOffset = render.calculateTextPositionViewportOffset(selection.extent)!;
         _floatingCursorController.setFloatingCursorPositions(
           floatingCursorOffset: _floatingCursorStartingOffset,
           finalCursorSelection: selection,
