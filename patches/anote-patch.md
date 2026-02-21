@@ -72,3 +72,20 @@
 - **PointerCancelEvent**：清空待确认 tap。
 
 效果：仅点击（按下与抬起在同一行且位移 < 18px）会选中行，滑动不触发选中。
+
+---
+
+### 6. iOS 跨行选区（起点在行尾）退格多删一字
+
+**时间**：2025-02-21
+
+**现象**：仅 **iOS** 出现。光标在上一行行尾（该行未选任何字符），把选区拉到下一行后按退格删除时，除正确删除跨行选区外，会**多删掉上一行最后一个字符**。第一行若有选中字符则正常；Android 无此问题。
+
+**原因**：
+1. 跨行且起点在行尾时，`_buildTextEditingValue()` 只向 IME 发送当前基行文本，选区被设为 `(line.length, line.length)`，即**折叠选区**，IME 认为“无选区、光标在行尾”。
+2. 退格被处理两次：我们先在 `onKey` 里执行 `deleteBackward()` → `_deleteSelection()` 正确合并；iOS 上 IME 仍会再发“删前一字符”的 delta，再执行一次 `edit(newValue)`，在已合并内容上多删一字。
+3. Android 上返回 `KeyEventResult.handled` 后 IME 通常不再发 delta，故不表现；iOS 仍会发，导致双重处理。
+
+**修改**：
+- **`lib/src/code_editor.dart`**：iOS 上退格键不再在 `onKey` 里处理，改为返回 `KeyEventResult.ignored`，退格只通过 IME 的 delta 驱动，避免与 key 双重处理。
+- **`lib/src/_code_input.dart`**：在 `updateEditingValueWithDeltas` 中，当当前为跨行选区且起点在行尾、且本次 delta 结果为“基行少最后一字、选区折叠在行末前一位”时，不按单行少一字走 `edit()`，而是解释为删除整段选区，调用 `deleteSelection()`，并同步 `_remoteEditingValue`。

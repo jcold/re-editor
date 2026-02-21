@@ -173,6 +173,24 @@ class _CodeInputController extends ChangeNotifier implements DeltaTextInputClien
     // print('update text ${newValue.text}');
     // print('update selection ${newValue.selection}');
     // print('update composing ${newValue.composing}');
+    // iOS：跨行选区且起点在行尾时，发给 IME 的是折叠选区 (line.length, line.length)，IME 会发「删前一字符」；
+    // 此处将「基行少最后一字」的 delta 正确解释为删除整段选区（合并行），避免多删一字。
+    if (kIsIOS &&
+        !selection.isCollapsed &&
+        selection.startIndex != selection.endIndex &&
+        selection.startOffset == codeLines[selection.startIndex].length) {
+      final String baseLineText = codeLines[selection.baseIndex].text;
+      final TextEditingValue effective = newValue.usePrefix ? newValue.removePrefixIfNecessary() : newValue;
+      if (baseLineText.isNotEmpty &&
+          effective.text == baseLineText.substring(0, baseLineText.length - 1) &&
+          effective.selection.isCollapsed &&
+          effective.selection.start == baseLineText.length - 1) {
+        _controller.deleteSelection();
+        _remoteEditingValue = _buildTextEditingValue();
+        notifyListeners();
+        return;
+      }
+    }
     if (newValue.usePrefix) {
       if (newValue.selection.isCollapsed && newValue.selection.start == 0) {
         _controller.deleteBackward();

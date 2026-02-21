@@ -583,6 +583,10 @@ class _CodeEditorState extends State<CodeEditor> {
         focusNode: _focusNode,
         onKey: (node, event) {
           if (event.isKeyPressed(LogicalKeyboardKey.backspace)) {
+            // iOS 上退格交给 IME 发 delta，由 updateEditingValueWithDeltas 统一处理（含跨行选区起点在行尾的语义），避免双重处理多删一字。
+            if (kIsIOS) {
+              return KeyEventResult.ignored;
+            }
             _editingController.deleteBackward();
             return KeyEventResult.handled;
           } else if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
